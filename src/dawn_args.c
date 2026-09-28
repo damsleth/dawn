@@ -18,13 +18,12 @@
 // POSIX options: single-character only
 // -d FILE   Demo mode
 // -t THEME  Set theme (light/dark)
-// -b        Transparent background
 // -T MINS   Set timer minutes (0 disables)
 // -p FILE   Preview file (read-only)
 // -P        Print mode (render to stdout)
 // -h        Help
 // -v        Version
-static const char* short_opts = "d:t:T:p:Pbhv";
+static const char* short_opts = "d:t:T:p:Phv";
 
 // #endregion
 
@@ -135,10 +134,6 @@ DawnArgs args_parse(int32_t argc, char* argv[])
             args.flags |= ARG_PRINT;
             break;
 
-        case 'b':
-            args.flags |= ARG_TRANSPARENT;
-            break;
-
         case 'h':
             args.flags |= ARG_HELP;
             break;
@@ -241,7 +236,6 @@ void args_print_usage(const char* program_name)
         "  -P          Print rendered output to stdout and exit\n"
         "  -d file     Demo mode: replay file as if being typed\n"
         "  -t theme    Set theme: 'light' or 'dark'\n"
-        "  -b          Transparent background (use terminal's own)\n"
         "  -T mins     Set timer in minutes (0 to disable)\n"
         "  -h          Show this help message\n"
         "  -v          Show version information\n"
