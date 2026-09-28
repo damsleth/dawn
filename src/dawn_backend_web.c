@@ -1628,6 +1628,7 @@ const DawnBackend dawn_backend_web = {
     .set_cursor_visible = web_set_cursor_visible,
     .set_fg = web_set_fg,
     .set_bg = web_set_bg,
+    .set_bg_default = NULL,
     .reset_attrs = web_reset_attrs,
     .set_bold = web_set_bold,
     .set_italic = web_set_italic,

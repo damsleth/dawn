@@ -148,9 +148,7 @@ static inline void buf_cursor(int32_t row, int32_t col)
         }
         // Position column with spaces (using default bg for margins)
         if (col > posix_state.print_col) {
-            if (posix_state.print_bg) {
-                buf_bg(posix_state.print_bg->r, posix_state.print_bg->g, posix_state.print_bg->b);
-            }
+            buf_append_str(CSI "49m");
             while (posix_state.print_col < col) {
                 buf_append_char(' ');
                 posix_state.print_col++;
@@ -159,9 +157,7 @@ static inline void buf_cursor(int32_t row, int32_t col)
             // Need to go back - use carriage return then spaces
             buf_append_char('\r');
             posix_state.print_col = 1;
-            if (posix_state.print_bg) {
-                buf_bg(posix_state.print_bg->r, posix_state.print_bg->g, posix_state.print_bg->b);
-            }
+            buf_append_str(CSI "49m");
             while (posix_state.print_col < col) {
                 buf_append_char(' ');
                 posix_state.print_col++;
@@ -701,6 +697,11 @@ static void posix_set_bg(DawnColor color)
         }
     }
     buf_bg(color.r, color.g, color.b);
+}
+
+static void posix_set_bg_default(void)
+{
+    buf_append_str(CSI "49m");
 }
 
 static void posix_reset_attrs(void)
@@ -2353,6 +2354,7 @@ const DawnBackend dawn_backend_posix = {
     .set_cursor_visible = posix_set_cursor_visible,
     .set_fg = posix_set_fg,
     .set_bg = posix_set_bg,
+    .set_bg_default = posix_set_bg_default,
     .reset_attrs = posix_reset_attrs,
     .set_bold = posix_set_bold,
     .set_italic = posix_set_italic,

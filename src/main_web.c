@@ -77,7 +77,7 @@ int32_t main(int32_t argc, char* argv[])
 
     // Initialize Dawn engine; the web build doesn't expose flags,
     // so let the engine load any persisted settings (defaults to dark).
-    if (!dawn_engine_init(-1, -1)) {
+    if (!dawn_engine_init(-1, -1, false)) {
         fprintf(stderr, "dawn: failed to initialize engine\n");
         dawn_ctx_shutdown(&app.ctx);
         return 1;

@@ -4847,7 +4847,7 @@ static void handle_input(void)
 
 // #region Engine API
 
-bool dawn_engine_init(int8_t theme_override, int32_t timer_override)
+bool dawn_engine_init(int8_t theme_override, int32_t timer_override, bool transparent_override)
 {
     app.timer_mins = DEFAULT_TIMER_MINUTES;
     app.mode = MODE_WELCOME;
@@ -4866,6 +4866,9 @@ bool dawn_engine_init(int8_t theme_override, int32_t timer_override)
     settings_load();
     if (theme_override >= 0) {
         app.theme = (Theme)theme_override;
+    }
+    if (transparent_override) {
+        app.transparent_bg = true;
     }
     if (timer_override >= 0) {
         app.timer_mins = timer_override;

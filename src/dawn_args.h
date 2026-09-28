@@ -19,6 +19,7 @@ DAWN_ENUM(uint8_t) {
     ARG_VERSION = 1 << 4, //!< Show version and exit
     ARG_ERROR = 1 << 5, //!< Parsing error occurred
     ARG_STDIN = 1 << 6, //!< Read from stdin (- operand)
+    ARG_TRANSPARENT = 1 << 7, //!< Transparent background
 } ArgFlag;
 
 //! Parsed command-line arguments

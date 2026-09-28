@@ -126,6 +126,7 @@ typedef struct DawnBackend {
     void (*set_cursor_visible)(bool visible);
     void (*set_fg)(DawnColor c);
     void (*set_bg)(DawnColor c);
+    void (*set_bg_default)(void); // Use the host's default background (optional)
     void (*reset_attrs)(void);
     void (*set_bold)(bool on);
     void (*set_italic)(bool on);

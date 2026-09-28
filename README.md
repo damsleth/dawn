@@ -133,6 +133,8 @@ Light and dark color schemes that adapt to your terminal's capabilities.
 
 ![Themes](assets/theme.png)
 
+For a transparent or blurred terminal, pass `-b` or set `"transparent_bg": true` in `~/.config/dawn/settings.json`. Dawn then draws its background as the terminal's default, so opacity shows through. Code blocks, modals and selections keep their own colors.
+
 ---
 
 ### AI Chat (Experimental)

@@ -15,7 +15,7 @@
 //! @param timer_override timer minutes to apply unconditionally,
 //!        or -1 to fall back to persisted settings (0 disables timer)
 //! @return true on success
-bool dawn_engine_init(int8_t theme_override, int32_t timer_override);
+bool dawn_engine_init(int8_t theme_override, int32_t timer_override, bool transparent_override);
 
 //! Shutdown the Dawn engine
 //! Frontend should call platform_shutdown() after this

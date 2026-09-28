@@ -183,9 +183,7 @@ static inline void buf_cursor(int32_t row, int32_t col)
             win32_state.print_col = 1;
         }
         if (col > win32_state.print_col) {
-            if (win32_state.print_bg) {
-                buf_bg(win32_state.print_bg->r, win32_state.print_bg->g, win32_state.print_bg->b);
-            }
+            buf_append_str(CSI "49m");
             while (win32_state.print_col < col) {
                 buf_append_char(' ');
                 win32_state.print_col++;
@@ -193,9 +191,7 @@ static inline void buf_cursor(int32_t row, int32_t col)
         } else if (col < win32_state.print_col) {
             buf_append_char('\r');
             win32_state.print_col = 1;
-            if (win32_state.print_bg) {
-                buf_bg(win32_state.print_bg->r, win32_state.print_bg->g, win32_state.print_bg->b);
-            }
+            buf_append_str(CSI "49m");
             while (win32_state.print_col < col) {
                 buf_append_char(' ');
                 win32_state.print_col++;
@@ -773,6 +769,11 @@ static void win32_set_bg(DawnColor color)
         }
     }
     buf_bg(color.r, color.g, color.b);
+}
+
+static void win32_set_bg_default(void)
+{
+    buf_append_str(CSI "49m");
 }
 
 static void win32_reset_attrs(void)
@@ -2407,6 +2408,7 @@ const DawnBackend dawn_backend_win32 = {
     .set_cursor_visible = win32_set_cursor_visible,
     .set_fg = win32_set_fg,
     .set_bg = win32_set_bg,
+    .set_bg_default = win32_set_bg_default,
     .reset_attrs = win32_reset_attrs,
     .set_bold = win32_set_bold,
     .set_italic = win32_set_italic,

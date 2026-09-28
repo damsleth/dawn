@@ -37,6 +37,15 @@ void set_fg(DawnColor c)
 
 void set_bg(DawnColor c)
 {
+    // Transparent mode: draw the theme background as the host's default
+    // background so terminal opacity/blur shows through
+    if (app.transparent_bg && DAWN_BACKEND(app)->set_bg_default) {
+        DawnColor bg = get_bg();
+        if (c.r == bg.r && c.g == bg.g && c.b == bg.b) {
+            DAWN_BACKEND(app)->set_bg_default();
+            return;
+        }
+    }
     DAWN_BACKEND(app)->set_bg(c);
 }
 

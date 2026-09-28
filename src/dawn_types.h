@@ -284,6 +284,7 @@ typedef struct {
     bool focus_mode; //!< Focus mode enabled
     bool plain_mode; //!< Plain text mode (no WYSIWYG rendering)
     bool preview_mode; //!< Read-only preview mode
+    bool transparent_bg; //!< Let the host's default background show through
 
     // Display
     int32_t rows, cols; //!< Display dimensions
