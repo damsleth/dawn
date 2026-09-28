@@ -25,3 +25,5 @@ bun.lockb
 fuzz/fuzz-bin.dSYM
 fuzz/output
 fuzz/fuzz-bin
+.DS_Store
+.claude/
