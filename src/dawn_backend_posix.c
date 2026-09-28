@@ -78,6 +78,8 @@ static struct {
     int32_t print_row; //!< Current output row in print mode (1-indexed)
     int32_t print_col; //!< Current output column in print mode (1-indexed)
     DawnColor* print_bg; //!< Default background for print mode margins (NULL if not set)
+    bool pane; //!< Print mode for a host pane (DAWN_COLS): the host lays out rows
+    int32_t print_covered; //!< Last row covered by a scaled run in pane mode
 } posix_state = { 0 };
 
 // Fast output buffer append
@@ -142,8 +144,11 @@ static inline void buf_cursor(int32_t row, int32_t col)
     if (posix_state.mode == DAWN_MODE_PRINT) {
         // Advance rows with newlines
         while (posix_state.print_row < row) {
-            buf_append_char('\n');
             posix_state.print_row++;
+            // Pane mode: rows under a scaled run are the host's to lay out
+            if (posix_state.pane && posix_state.print_row <= posix_state.print_covered)
+                continue;
+            buf_append_char('\n');
             posix_state.print_col = 1;
         }
         // Position column with spaces (using default bg for margins)
@@ -482,6 +487,13 @@ static bool posix_init(DawnMode mode)
         if (colorterm && (strcmp(colorterm, "truecolor") == 0 || strcmp(colorterm, "24bit") == 0)) {
             posix_state.capabilities |= DAWN_CAP_TRUE_COLOR;
         }
+        // Can't probe, so the host says whether it renders OSC 66. A scaled
+        // run then stays on one output line: the host gives it its rows.
+        const char* env_sizing = getenv("DAWN_TEXT_SIZING");
+        if (env_sizing && strcmp(env_sizing, "1") == 0) {
+            posix_state.capabilities |= DAWN_CAP_TEXT_SIZING;
+        }
+        posix_state.pane = true;
         posix_state.cols = fixed_cols;
         posix_state.rows = 24;
         posix_state.print_row = 1;
@@ -861,7 +873,11 @@ static void posix_repeat_char(char c, int32_t n)
     if (n <= 0)
         return;
     buf_append_char(c);
-    if (n > 1) {
+    if (posix_state.pane) {
+        // Hosts like lf only parse SGR in a pane, so spell the run out
+        for (int32_t i = 1; i < n; i++)
+            buf_append_char(c);
+    } else if (n > 1) {
         // REP sequence: CSI n b - repeat previous char n times
         char seq[16];
         seq[0] = '\x1b';
@@ -876,6 +892,14 @@ static void posix_repeat_char(char c, int32_t n)
     }
 }
 
+//! Pane mode: remember the rows a scaled run spans below the current one
+static inline void print_cover(int32_t scale)
+{
+    int32_t last = posix_state.print_row + scale - 1;
+    if (posix_state.pane && last > posix_state.print_covered)
+        posix_state.print_covered = last;
+}
+
 static void posix_write_scaled(const char* str, size_t len, int32_t scale)
 {
     if (scale <= 1 || !(posix_state.capabilities & DAWN_CAP_TEXT_SIZING)) {
@@ -888,6 +912,7 @@ static void posix_write_scaled(const char* str, size_t len, int32_t scale)
     if (scale > 7)
         scale = 7;
     buf_printf(TEXT_SIZE_OSC "s=%d;%.*s" TEXT_SIZE_ST, scale, (int32_t)len, str);
+    print_cover(scale);
     // Track column position (scaled text takes more columns)
     if (posix_state.mode == DAWN_MODE_PRINT) {
         posix_state.print_col += utf8_display_width(str, len) * scale;
@@ -926,6 +951,7 @@ static void posix_write_scaled_frac(const char* str, size_t len, int32_t scale, 
             }
         } else {
             buf_printf(TEXT_SIZE_OSC "s=%d;%.*s" TEXT_SIZE_ST, scale, (int32_t)len, str);
+            print_cover(scale);
             if (posix_state.mode == DAWN_MODE_PRINT) {
                 posix_state.print_col += utf8_display_width(str, len) * scale;
             }
@@ -936,6 +962,7 @@ static void posix_write_scaled_frac(const char* str, size_t len, int32_t scale, 
     // Fractional scaling: s=scale:n=num:d=denom
     buf_printf(TEXT_SIZE_OSC "s=%d:n=%d:d=%d;%.*s" TEXT_SIZE_ST,
         scale, num, denom, (int32_t)len, str);
+    print_cover(scale);
     if (posix_state.mode == DAWN_MODE_PRINT) {
         // Approximate column width for fractional scaling
         posix_state.print_col += utf8_display_width(str, len) * scale;
