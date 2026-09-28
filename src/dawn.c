@@ -3395,6 +3395,17 @@ static void handle_writing(int32_t key)
 {
     size_t len = gap_len(&app.text);
 
+    // Read-only preview: less-style reading keys
+    if (app.preview_mode && !app.ai_open) {
+        switch (key) {
+        case 'j': key = DAWN_KEY_DOWN; break;
+        case 'k': key = DAWN_KEY_UP; break;
+        case 4: key = DAWN_KEY_PGDN; break; // Ctrl+D
+        case 21: key = DAWN_KEY_PGUP; break; // Ctrl+U
+        case 'q': key = '\x1b'; break;
+        }
+    }
+
     switch (key) {
     case '\x1b':
         if (app.ai_open)

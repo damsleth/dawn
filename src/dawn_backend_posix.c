@@ -473,6 +473,23 @@ static bool posix_init(DawnMode mode)
             return false;
     }
 
+    // DAWN_COLS: render -P output for a pane of that width (e.g. a file
+    // manager previewer). The tty belongs to the host app, so don't probe it.
+    const char* env_cols = getenv("DAWN_COLS");
+    int32_t fixed_cols = (mode == DAWN_MODE_PRINT && env_cols) ? atoi(env_cols) : 0;
+    if (fixed_cols > 0) {
+        const char* colorterm = getenv("COLORTERM");
+        if (colorterm && (strcmp(colorterm, "truecolor") == 0 || strcmp(colorterm, "24bit") == 0)) {
+            posix_state.capabilities |= DAWN_CAP_TRUE_COLOR;
+        }
+        posix_state.cols = fixed_cols;
+        posix_state.rows = 24;
+        posix_state.print_row = 1;
+        posix_state.print_col = 1;
+        posix_state.initialized = true;
+        return true;
+    }
+
     if (mode == DAWN_MODE_PRINT) {
         // Print mode: use stderr for terminal queries, stdout for output
         // Open /dev/tty for bidirectional terminal communication
@@ -947,6 +964,9 @@ static void posix_sync_end(void)
 
 static void posix_set_title(const char* title)
 {
+    // No window title in print mode: output may land in a file or a pane
+    if (posix_state.mode == DAWN_MODE_PRINT)
+        return;
     // OSC 0 sets window title: ESC ] 0 ; title BEL
     if (title && *title) {
         buf_append_str("\x1b]0;");
@@ -1882,9 +1902,12 @@ static void posix_image_frame_end(void)
 
 static void posix_image_clear_all(void)
 {
-    buf_append_str("\x1b_Ga=d,d=A,q=2\x1b\\");
-    buf_flush();
-    fflush(stdout);
+    // Print mode streams into a screen dawn doesn't own: leave its images alone
+    if (posix_state.mode != DAWN_MODE_PRINT) {
+        buf_append_str("\x1b_Ga=d,d=A,q=2\x1b\\");
+        buf_flush();
+        fflush(stdout);
+    }
     for (int32_t i = 0; i < transmitted_count; i++) {
         free(transmitted_images[i].path);
     }
