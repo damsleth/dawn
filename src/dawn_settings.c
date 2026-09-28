@@ -10,10 +10,6 @@
 
 // #region Helpers
 
-//! Transparency as stored on disk; kept apart from app.transparent_bg so a
-//! one-off -b flag isn't persisted
-static bool saved_transparent_bg = false;
-
 #ifdef _WIN32
 #define DAWN_SEP "\\"
 #else
@@ -63,8 +59,7 @@ void settings_load(void)
 
     cJSON* transparent_j = cJSON_GetObjectItem(root, "transparent_bg");
     if (cJSON_IsBool(transparent_j)) {
-        saved_transparent_bg = cJSON_IsTrue(transparent_j);
-        app.transparent_bg = saved_transparent_bg;
+        app.transparent_bg = cJSON_IsTrue(transparent_j);
     }
 
     cJSON* timer_j = cJSON_GetObjectItem(root, "timer_mins");
@@ -87,7 +82,7 @@ void settings_save(void)
 
     cJSON_AddStringToObject(root, "theme", app.theme == THEME_DARK ? "dark" : "light");
     cJSON_AddNumberToObject(root, "timer_mins", (double)app.timer_mins);
-    cJSON_AddBoolToObject(root, "transparent_bg", saved_transparent_bg);
+    cJSON_AddBoolToObject(root, "transparent_bg", app.transparent_bg);
 
     char* json = cJSON_Print(root);
     cJSON_Delete(root);

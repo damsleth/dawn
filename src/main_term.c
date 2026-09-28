@@ -67,7 +67,7 @@ int32_t main(int32_t argc, char* argv[])
 
     // Initialize Dawn engine. Pass -1 to honor persisted settings;
     // -t/-T flags from the user take precedence over what's on disk.
-    if (!dawn_engine_init(args.theme, args.timer_mins, (args.flags & ARG_TRANSPARENT) != 0)) {
+    if (!dawn_engine_init(args.theme, args.timer_mins)) {
         fprintf(stderr, "dawn: failed to initialize engine\n");
         dawn_ctx_shutdown(&app.ctx);
         free(stdin_content);
