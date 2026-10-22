@@ -119,7 +119,12 @@ static inline Layout calc_layout(void)
         l.ai_start_col = l.text_area_cols + 1;
     }
 
-    l.margin = l.text_area_cols > 80 ? (l.text_area_cols - 70) / 2 : 4;
+    // Pane mode (-P with DAWN_COLS): the host already sized the pane, so
+    // fill it instead of centring a 70-column reading column.
+    if (app.ctx.mode == DAWN_MODE_PRINT && getenv("DAWN_COLS"))
+        l.margin = 0;
+    else
+        l.margin = l.text_area_cols > 80 ? (l.text_area_cols - 70) / 2 : 4;
     l.text_width = l.text_area_cols - l.margin * 2;
     l.top_margin = 2;
     l.text_height = app.rows - l.top_margin - 2;
