@@ -691,7 +691,8 @@ static DawnColor* posix_get_host_bg(void)
 static void posix_get_size(int32_t* out_cols, int32_t* out_rows)
 {
     struct winsize ws;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
+    // Pane mode keeps the DAWN_COLS width even when stdout is a terminal
+    if (!posix_state.pane && ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
         posix_state.cols = ws.ws_col;
         posix_state.rows = ws.ws_row;
     }
